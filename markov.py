@@ -1,5 +1,7 @@
 """Generate Markov text from text files."""
 
+import os
+import discord
 from random import choice
 # from pprint import pprint
 
@@ -70,17 +72,32 @@ def make_text(chains):
     return ' '.join(words)
 
 
-# input_path = 'green-eggs.txt'
-input_path = 'gettysburg.txt'
+def generate_story(input_path):
+    """Generates a markov-chains story from the the input file"""
+    
+    # Open the file and turn it into one long string
+    input_text = open_and_read_file(input_path)
 
-# Open the file and turn it into one long string
-input_text = open_and_read_file(input_path)
+    # Get a Markov chain
+    chains = make_chains(input_text)
+    # pprint(chains)
 
-# Get a Markov chain
-chains = make_chains(input_text)
-# pprint(chains)
+    # Produce random text
+    return make_text(chains)
+    
+client = discord.Client()
 
-# Produce random text
-random_text = make_text(chains)
+@client.event
+async def on_ready():
+    print(f'Successfully connected! Logged in as {client.user}')
 
-print(random_text)
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+    
+    await message.author.send(generate_story('green-eggs.txt'))
+
+
+client.run(os.environ.get('DISCORD_TOKEN'))
